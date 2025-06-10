@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121213;
+            color: white;
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        #board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .row {
+            display: grid;
+            grid-template-columns: repeat(5, 60px);
+            gap: 10px;
+        }
+        
+        .tile {
+            width: 60px;
+            height: 60px;
+            font-size: 2em;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 60px;
+            border: 2px solid #3a3a3c;
+            background-color: #121213;
+            color: white;
+        }
+        
+        .correct {
+            background-color: #538d4e;
+            border: none;
+        }
+        
+        .present {
+            background-color: #b59f3b;
+            border: none;
+        }
+        
+        .absent {
+            background-color: #3a3a3c;
+            border: none;
+        }
+        
+        .keyboard {
+            margin-top: 20px;
+        }
+        
+        .key {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 16px;
+            background-color: #3a3a3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .key:hover {
+            background-color: #5a5a5c;
+        }
+        
+        #controls {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Wordle</h1>
+    <div id="score">Score: 0</div>
+    <div id="board"></div>
+
+    <div id="controls">
+        <input type="text" id="guess-input" maxlength="5" placeholder="Enter guess" />
+        <button onclick="submitGuess()">Guess</button>
+        <button onclick="restartGame()">Restart</button>
+    </div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <p id="message"></p>
+
+    <script>
+        let secretWord = "STEVE";
+        const maxGuesses = 6;
+        let currentGuess = 0;
+        let score = 0;
+
+        const board = document.getElementById("board");
+        const scoreDisplay = document.getElementById("score");
+        const keyboard = document.getElementById("keyboard");
+
+        function createRow(guess = "", result = []) {
+            const row = document.createElement("div");
+            row.classList.add("row");
+            for (let i = 0; i < 5; i++) {
+                const tile = document.createElement("div");
+                tile.classList.add("tile");
+                tile.textContent = guess[i] || "";
+                if (result[i]) tile.classList.add(result[i]);
+                row.appendChild(tile);
+            }
+            board.appendChild(row);
+        }
+
+        function submitGuess() {
+            const input = document.getElementById("guess-input");
+            const guess = input.value.toUpperCase();
+            if (guess.length !== 5) return alert("Guess must be 5 letters.");
+            if (currentGuess >= maxGuesses) return;
+
+            const result = Array(5).fill("absent");
+            const secretLetters = secretWord.split("");
+
+            for (let i = 0; i < 5; i++) {
+                if (guess[i] === secretWord[i]) {
+                    result[i] = "correct";
+                    secretLetters[i] = null;
+                }
+            }
+
+            for (let i = 0; i < 5; i++) {
+                if (result[i] === "correct") continue;
+                const index = secretLetters.indexOf(guess[i]);
+                if (index !== -1) {
+                    result[i] = "present";
+                    secretLetters[index] = null;
+                }
+            }
+
+            const row = document.createElement("div");
+            row.classList.add("row");
+            for (let i = 0; i < 5; i++) {
+                const tile = document.createElement("div");
+                tile.classList.add("tile");
+                tile.textContent = guess[i] || "";
+                if (result[i]) tile.classList.add(result[i]);
+                row.appendChild(tile);
+            }
+            board.insertBefore(row, board.firstChild);
+            currentGuess++;
+            input.value = "";
+
+            if (guess === secretWord) {
+                document.getElementById("message").textContent = "🎉 You guessed it!";
+                score++;
+                scoreDisplay.textContent = `Score: ${score}`;
+                input.disabled = true;
+            } else if (currentGuess === maxGuesses) {
+                document.getElementById("message").textContent = `😢 Out of guesses. The word was ${secretWord}.`;
+                input.disabled = true;
+            }
+        }
+
+        function restartGame() {
+            board.innerHTML = "";
+            document.getElementById("message").textContent = "";
+            document.getElementById("guess-input").value = "";
+            document.getElementById("guess-input").disabled = false;
+            currentGuess = 0;
+            secretWord = "STEVE";
+        }
+
+        function setupKeyboard() {
+            const letters = "QWERTYUIOPASDFGHJKLZXCVBNM";
+            for (let char of letters) {
+                const key = document.createElement("button");
+                key.classList.add("key");
+                key.textContent = char;
+                key.onclick = () => {
+                    const input = document.getElementById("guess-input");
+                    input.value = (input.value + char).toUpperCase().slice(0, 5);
+                };
+                keyboard.appendChild(key);
+            }
+            const del = document.createElement("button");
+            del.classList.add("key");
+            del.textContent = "⌫";
+            del.onclick = () => {
+                const input = document.getElementById("guess-input");
+                input.value = input.value.slice(0, -1);
+            };
+            keyboard.appendChild(del);
+        }
+
+        setupKeyboard();
+        restartGame();
+    </script>
+</body>
+
+</html>
