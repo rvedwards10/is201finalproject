@@ -52,6 +52,17 @@
     font-family: Arial, sans-serif;
 }
 
+.anchorlink {
+    top: 20px;
+    background-color: #222;
+    color: whitesmoke;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
 .corner-link:hover {
     background-color: #444;
 }
